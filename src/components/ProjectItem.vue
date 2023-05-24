@@ -61,14 +61,14 @@ export default {
       console.log(this.projects);
       if (this.isSort) {
         return this.projects.sort((a, b) => {
-          const dateA = new Date(a.due);
-          const dateB = new Date(b.due);
+          const dateA = new Date(a.due_date);
+          const dateB = new Date(b.due_date);
           return dateA - dateB;
         });
       } else {
         return this.projects.sort((a, b) => {
-          const dateA = new Date(a.due);
-          const dateB = new Date(b.due);
+          const dateA = new Date(a.due_date);
+          const dateB = new Date(b.due_date);
           return dateB - dateA;
         });
       }

@@ -1,27 +1,42 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import Vue from "vue";
+import VueRouter from "vue-router";
+import NavbarApp from "../components/NavbarApp";
+import DashboardView from "../views/DashboardView";
+import ProjectsView from "../views/ProjectsView";
+import TeamView from "../views/TeamView";
+import ErrorView from "../views/ErrorView";
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/',
-    name: 'home',
-    component: HomeView
+    path: "/",
+    name: "Dashboard",
+    components: { default: DashboardView, "navbar-app": NavbarApp },
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
-]
+    path: "/my-projects",
+    name: "my-projects",
+    components: { default: ProjectsView, "navbar-app": NavbarApp },
+  },
+  {
+    path: "/team",
+    name: "team",
+    components: { default: TeamView, "navbar-app": NavbarApp },
+  },
+  {
+    path: "/error",
+    name: "error",
+    component: ErrorView,
+  },
+  {
+    path: "*",
+    redirect: "/error",
+  },
+];
 
 const router = new VueRouter({
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;

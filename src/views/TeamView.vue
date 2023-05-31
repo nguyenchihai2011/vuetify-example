@@ -3,13 +3,13 @@
     <h1 class="h6 ma-6">Team</h1>
     <v-container>
       <v-row>
-        <v-col sm="3" v-for="(member, i) in members" :key="i">
+        <v-col sm="3" v-for="(member, i) in getUsers" :key="i">
           <v-card class="text-center">
             <v-avatar>
-              <img :src="member.avatar" :alt="member.name" />
+              <img :src="member.avatar" :alt="member.username" />
             </v-avatar>
             <v-card-title class="justify-center">
-              {{ member.name }}
+              {{ member.username }}
             </v-card-title>
             <v-card-subtitle> {{ member.job }} </v-card-subtitle>
             <v-btn depressed @click="sendMessenger(member)">
@@ -24,6 +24,7 @@
       <MessengerBox
         v-show="isShow"
         :user="user"
+        :socketInstance="socketInstance"
         @close-messenger-box="isShow = false"
       />
     </v-container>
@@ -31,17 +32,15 @@
 </template>
 
 <script>
-import io from "socket.io-client";
-import { apiClient } from "@/config/httpRequest";
 import MessengerBox from "./MessengerBox.vue";
+import { mapActions, mapGetters } from "vuex";
 export default {
   data() {
     return {
-      members: [],
       snackbar: false,
       user: {},
-
       isShow: false,
+      socketInstance: null,
     };
   },
 
@@ -49,29 +48,21 @@ export default {
     MessengerBox,
   },
 
+  computed: {
+    ...mapGetters(["getUsers"]),
+  },
+
   methods: {
-    async fetchAPIMembers() {
-      try {
-        const response = await apiClient.get("members");
-        this.members = response.data;
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    },
+    ...mapActions(["fetchAPIUsers"]),
 
     sendMessenger(member) {
       this.user = member;
       this.isShow = true;
-      this.socketInstance = io("http://localhost:8082");
-
-      this.socketInstance.on("message:received", (data) => {
-        this.messages = this.messages.concat(data);
-      });
     },
   },
 
   created() {
-    this.fetchAPIMembers();
+    this.fetchAPIUsers();
   },
 };
 </script>

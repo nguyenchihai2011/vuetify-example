@@ -1,35 +1,27 @@
 <template>
   <div>
     <h1 class="h6 ma-6">My Projects</h1>
-
-    <project-item :projects="projects" />
+    <project-item :projects="getProjectByUser" />
   </div>
 </template>
 <script>
-import { apiClient } from "@/config/httpRequest";
+import { mapGetters, mapActions } from "vuex";
 import ProjectItem from "@/components/ProjectItem.vue";
 export default {
-  data() {
-    return {
-      projects: [],
-    };
-  },
-
   components: {
     ProjectItem,
   },
 
   methods: {
-    async fetchAPIProductFilled() {
-      const response = await apiClient.get("projects", {
-        params: { owner: "Member 1" },
-      });
-      this.projects = response.data;
-    },
+    ...mapActions(["fetchAPIProjects"]),
   },
 
-  mounted() {
-    this.fetchAPIProductFilled();
+  computed: {
+    ...mapGetters(["getProjectByUser"]),
+  },
+
+  created() {
+    this.fetchAPIProjects();
   },
 };
 </script>

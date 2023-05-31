@@ -2,21 +2,25 @@
   <v-card class="messenger-box" elevation-5>
     <v-card-title class="subtitle-1 pa-2 messenger-box-title">
       <v-avatar> <img :src="user.avatar" :alt="user.avatar" /> </v-avatar>
-      {{ user.name }}
+      {{ user.username }}
       <v-spacer></v-spacer>
       <v-icon class="blue--text" @click="closeMessengerBox">mdi-close</v-icon>
     </v-card-title>
     <v-divider></v-divider>
     <div>
       <v-card height="330px" class="messenger-box-body">
-        <v-card-subtitle v-for="(mess, i) in messages" :key="i" class="py-2">
+        <v-card-subtitle
+          v-for="(mess, i) in messagesFilled"
+          :key="i"
+          class="py-2"
+        >
           <b>{{ mess.userSend }}</b> : {{ mess.text }}
         </v-card-subtitle>
       </v-card>
 
       <v-card class="d-flex">
         <v-text-field
-          v-model="message.text"
+          v-model="message"
           label="Send mess"
           solo
           outlined
@@ -31,13 +35,13 @@
   </v-card>
 </template>
 <script>
+import auth from "@/store/modules/auth";
+import io from "socket.io-client";
 export default {
   data() {
     return {
-      message: {
-        text: "",
-        userSend: "Member 1",
-      },
+      message: "",
+
       messages: [],
     };
   },
@@ -48,23 +52,56 @@ export default {
     },
   },
 
+  computed: {
+    messagesFilled() {
+      return this.messages.filter((mess) => mess.id === this.user.email);
+    },
+  },
+
   methods: {
     closeMessengerBox() {
       this.$emit("close-messenger-box");
     },
 
     resetMess() {
-      this.message = {
-        text: "",
-        userSend: "Member 1",
-      };
+      this.message = "";
     },
 
     sendMess() {
-      // eslint-disable-next-line
-      if (this.message.text) this.messages.push(this.message);
+      if (this.message) {
+        this.messages.push({
+          text: this.message,
+          userSend: auth.state.userInfo.username,
+          id: this.user.email,
+        });
+
+        const privateMessage = {
+          from: auth.state.userInfo.username,
+          to: this.user.username,
+          message: this.message,
+        };
+
+        // Gửi tin nhắn riêng tới server
+        this.socketInstance.emit("privateMessage", privateMessage);
+        console.log(`Private message sent to ${this.user.username}`);
+      }
+
       this.resetMess();
     },
+  },
+
+  created() {
+    this.socketInstance = io("http://localhost:8081");
+    this.socketInstance.emit("authenticate", auth.state.userInfo.username);
+    // Listen for private messages
+    this.socketInstance.on("privateMessage", (data) => {
+      // Handle received private message
+      this.messages.push({
+        text: data.message,
+        userSend: data.from,
+        id: this.user.email,
+      });
+    });
   },
 };
 </script>

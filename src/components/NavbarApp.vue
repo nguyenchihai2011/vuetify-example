@@ -38,7 +38,7 @@
 
       <!-- Logout button -->
 
-      <v-btn color="grey lighten-2">
+      <v-btn color="grey lighten-2" @click="signOut()">
         Sign out <v-icon right> mdi-logout </v-icon>
       </v-btn>
     </v-app-bar>
@@ -48,14 +48,12 @@
       <v-list nav dense>
         <v-layout justify-center>
           <v-avatar color="indigo" size="100">
-            <img
-              :src="require('@/assets/images/users/member1.jpg')"
-              alt="John"
-            />
+            <img :src="GET_USER_INFO.avatar" alt="Avatar" />
           </v-avatar>
         </v-layout>
-        <v-layout justify-center class="pa-2 mb-4">Member 1</v-layout>
-
+        <v-layout justify-center class="pa-2 mb-4">{{
+          GET_USER_INFO.username
+        }}</v-layout>
         <popup-app />
         <v-list-item-group active-class="deep-purple--text text--accent-4">
           <v-list-item
@@ -76,12 +74,14 @@
 </template>
 
 <script>
+import { apiClient } from "@/config/httpRequest";
 import PopupApp from "./PopupApp.vue";
+import { mapGetters } from "vuex";
 export default {
   data() {
     return {
       items: [
-        { title: "Dashboard", link: "/", icon: "mdi-view-dashboard" },
+        { title: "Dashboard", link: "/dashboard", icon: "mdi-view-dashboard" },
         { title: "My Project", link: "/my-projects", icon: "mdi-folder" },
         { title: "Team", link: "/team", icon: "mdi-account-group" },
       ],
@@ -92,6 +92,22 @@ export default {
 
   components: {
     PopupApp,
+  },
+
+  computed: {
+    ...mapGetters(["GET_USER_INFO"]),
+  },
+
+  methods: {
+    async signOut() {
+      try {
+        await apiClient.post("auth/logout");
+        localStorage.clear();
+        this.$router.push("/");
+      } catch (error) {
+        console.log(error);
+      }
+    },
   },
 };
 </script>

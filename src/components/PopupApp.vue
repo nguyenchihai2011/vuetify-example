@@ -36,7 +36,7 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-text-field
-              v-model="project.due"
+              v-model="project.due_date"
               label="Due date"
               prepend-icon="mdi-calendar"
               readonly
@@ -44,7 +44,7 @@
               v-on="on"
             ></v-text-field>
           </template>
-          <v-date-picker v-model="project.due">
+          <v-date-picker v-model="project.due_date">
             <v-spacer></v-spacer>
           </v-date-picker>
         </v-menu>
@@ -64,14 +64,16 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import { apiClient } from "@/config/httpRequest";
+import auth from "@/store/modules/auth";
 export default {
   data() {
     return {
       project: {
         title: "",
         description: "",
-        owner: "Member 1",
+        owner: auth.state.userInfo.username,
         due_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
           .toISOString()
           .substring(0, 10),
@@ -87,11 +89,13 @@ export default {
   },
 
   methods: {
+    ...mapActions(["fetchAPIProjects"]),
+
     cancelProject() {
       this.project = {
         title: "",
         description: "",
-        owner: "Member 1",
+        owner: auth.state.userInfo.username,
         due_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
           .toISOString()
           .substring(0, 10),
@@ -101,24 +105,13 @@ export default {
     },
 
     async createProject(project) {
-      console.log(project);
       try {
         if (this.$refs.form.validate()) {
+          // eslint-disable-next-line
           const response = await apiClient.post("projects", project);
           this.$refs.form.resetValidation();
-          this.project = {
-            title: "",
-            description: "",
-            owner: "Member 1",
-            due_date: new Date(
-              Date.now() - new Date().getTimezoneOffset() * 60000
-            )
-              .toISOString()
-              .substring(0, 10),
-            status: "ongoing",
-          };
-          console.log(response.data);
-          this.dialog = false;
+          this.cancelProject();
+          this.fetchAPIProjects();
         }
       } catch (error) {
         console.error(error);
